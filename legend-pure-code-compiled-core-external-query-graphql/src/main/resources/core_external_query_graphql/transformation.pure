@@ -162,7 +162,32 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
 ###Pure
 import meta::external::query::graphQL::transformation::queryToPure::*;
 
-function meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(
+
+function meta::external::query::graphQL::transformation::queryToPure::getMutationPlansFromGraphQL(
+                                                                          cl:Class<Any>[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::pure::runtime::Runtime[1],
+                                                                          query:meta::external::query::graphQL::metamodel::Document[1],
+                                                                          extensions:meta::pure::router::extension::RouterExtension[*]
+                                                                      ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
+{
+  fail('Error: getMutationPlansFromGraphQL not yet implemented.');
+  [];
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::getSubscriptionPlansFromGraphQL(
+                                                                          cl:Class<Any>[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::pure::runtime::Runtime[1],
+                                                                          query:meta::external::query::graphQL::metamodel::Document[1],
+                                                                          extensions:meta::pure::router::extension::RouterExtension[*]
+                                                                      ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
+{
+  println('Error: getSubscriptionPlansFromGraphQL not yet implemented.');
+  [];
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::getQueryPlansFromGraphQL(
                                                                           cl:Class<Any>[1],
                                                                           mapping:meta::pure::mapping::Mapping[1],
                                                                           runtime:meta::pure::runtime::Runtime[1],
@@ -183,6 +208,28 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlansFr
                 )
               )
         );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(
+                                                                          cl:Class<Any>[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::pure::runtime::Runtime[1],
+                                                                          query:meta::external::query::graphQL::metamodel::Document[1],
+                                                                          extensions:meta::pure::router::extension::RouterExtension[*]
+                                                                      ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
+{
+  // TODO: how to handle multiple queries ( should we assume OperationDefinition type will be same for all? )
+  let operationType = $query.definitions->at(0)->cast(@meta::external::query::graphQL::metamodel::executable::OperationDefinition).type;
+
+  // How to do this with match?
+  if ($operationType.name == 'query',
+      |  meta::external::query::graphQL::transformation::queryToPure::getQueryPlansFromGraphQL($cl, $mapping, $runtime, $query, $extensions);,
+      | if ($operationType.name == 'mutation',
+      | meta::external::query::graphQL::transformation::queryToPure::getMutationPlansFromGraphQL($cl, $mapping, $runtime, $query, $extensions);,
+      | if ($operationType.name == 'subscription',
+      | meta::external::query::graphQL::transformation::queryToPure::getSubscriptionPlansFromGraphQL($cl, $mapping, $runtime, $query, $extensions);,
+      | println('Unrecognized operation type!'))));
+
 }
 
 Class meta::external::query::graphQL::transformation::queryToPure::GraphFetchResult

@@ -17,6 +17,7 @@ import meta::external::query::graphQL::metamodel::executable::*;
 import meta::external::query::graphQL::metamodel::value::*;
 import meta::external::query::graphQL::metamodel::typeSystem::*;
 import meta::external::query::graphQL::serialization::*;
+import meta::json::*;
 
 function <<test.Test>> meta::external::query::graphQL::serialization::tests::testSimpleSerialization():Boolean[1]
 {
@@ -186,5 +187,59 @@ function <<test.Test>> meta::external::query::graphQL::serialization::tests::tes
                 '\n' +
                 'fragment MyFragment on TypeCond {\n' +
                 '  newName: name(id: \"Bla\")\n' +
+                '}', $res->graphQLtoString());
+}
+
+
+
+Class meta::external::query::graphQL::serialization::tests::Firm
+{
+  name : String[1];
+  address : String[1];
+ }
+
+
+function <<test.Test>> meta::external::query::graphQL::serialization::tests::testSimpleMutationSerialization():Boolean[1]
+{
+
+ let input = ^meta::external::query::graphQL::serialization::tests::Firm(name='my firm', address='street 123');
+
+  let res = ^Document(
+    definitions = 
+      [
+        ^OperationDefinition(
+          type = OperationType.mutation,
+          name = 'persistFirm',
+          variables = [],
+          directives = [],
+          selectionSet = ^Field(
+            name = 'persistFirm',
+            arguments = [
+               ^Argument(name='input', value=^ObjectValue(value=$input->meta::json::toJSONElement()->cast(@JSONObject)))
+            ],
+            directives = [],
+            selectionSet = [
+              ^Field(
+               name = 'id',
+              arguments = [],
+              directives = []
+            ),
+              ^Field(
+               name = 'name',
+              arguments = [],
+              directives = []
+            ),
+            ^Field(
+               name = 'address',
+              arguments = [],
+              directives = []
+            )
+            ]
+          )
+        )
+      ]
+  );
+
+  assertEquals( 'query\n' +
                 '}', $res->graphQLtoString());
 }

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::meta::external::query::graphQL::metamodel::*;
+import meta::json::*; // HG: should we use JsonObject  or JSONElement here or just Object ?
 
 Enum meta::external::query::graphQL::metamodel::typeSystem::ExecutableDirectiveLocation
 {
@@ -200,6 +201,7 @@ Class meta::external::query::graphQL::metamodel::typeSystem::ObjectTypeDefinitio
 
 Class meta::external::query::graphQL::metamodel::value::ObjectValue extends meta::external::query::graphQL::metamodel::value::Value
 {
+  value: JSONObject[1]; // should be * ? or ListValue with ObjectValue?
 }
 
 Class meta::external::query::graphQL::metamodel::executable::OperationDefinition extends meta::external::query::graphQL::metamodel::executable::ExecutableDefinition

@@ -23,6 +23,7 @@ function meta::external::query::graphQL::binding::toPure::primitiveTypeMapping()
     [
       pair('String', String),
       pair('Boolean', Boolean),
+      pair('Object', Any),
       pair('Int', Integer),
       pair('Float', Float),
       pair('ID', String)
@@ -131,7 +132,8 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
                                             parameters = $field.arguments->map(a|$a.value->match(
                                                                                             [
                                                                                               s:StringValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=String), values=$s.value),
-                                                                                              b:BooleanValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Boolean), values=$b.value)
+                                                                                              b:BooleanValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Boolean), values=$b.value),
+                                                                                              o:ObjectValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Any), values=$o.value)
                                                                                             ]
                                                                                           )
                                                                            )
@@ -171,7 +173,17 @@ function meta::external::query::graphQL::transformation::queryToPure::getMutatio
                                                                           extensions:meta::pure::router::extension::RouterExtension[*]
                                                                       ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
 {
-  fail('Error: getMutationPlansFromGraphQL not yet implemented.');
+  // fail('Error: getMutationPlansFromGraphQL not yet implemented.');
+  //meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure(query:Document[1], root: Class<Any>[1]) : RootGraphFetchTree<Any>[1]
+
+  
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  let graphFetchString = $graphFetch->meta::pure::graphFetch::routing::asString(true);
+  //  assertEquals('', $graphFetchString);
+    // assertEquals('', meta::json::toPrettyJSONString(meta::json::toJSONElement($graphFetchString)));
+   let domainTypeClass = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree();
+  // let domainTypeClassString = $domainTypeClass->meta::pure::graphFetch::routing::asString(true);
+  
   [];
 }
 
@@ -196,7 +208,10 @@ function meta::external::query::graphQL::transformation::queryToPure::getQueryPl
                                                                       ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
 {
   let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  let graphFetchString = $graphFetch->meta::pure::graphFetch::routing::asString(true);
+    // assertEquals('', $graphFetchString);
   let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree();
+  assertEquals('', $res);
   $res->map(r|
               pair(
                 $r.first,

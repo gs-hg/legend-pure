@@ -91,6 +91,8 @@ function <<access.private>> meta::pure::graphFetch::domain::findGetAllInQualifie
 
 function <<access.private>> meta::pure::graphFetch::domain::lookForGetAll(s:ValueSpecification[1]):ValueSpecification[1]
 {
+  println('invoking meta::pure::graphFetch::domain::lookForGetAll..');
+  println(meta::json::toJSON($s));
   $s->match([
     s:SimpleFunctionExpression[1]|if($s.func != getAll_Class_1__T_MANY_ && !$s.parametersValues->isEmpty(),
                                       |$s.parametersValues->at(0)->lookForGetAll(),

@@ -21,31 +21,37 @@ import meta::pure::executionPlan::*;
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
 {
+  println('\nhere 5\n');
    $f->executionPlan(^ExecutionContext(), $extensions, noDebug());
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
 {
+  println('\nhere 6\n');
    $f->executionPlan($context, $extensions, noDebug());
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
+  println('\nhere 7\n');
    $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, $debugContext);
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
 {
+  println('\nhere 8\n');
    $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, noDebug());
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], shouldDebug:Boolean[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
 {
+  println('\nhere 9\n');
    $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, if($shouldDebug,|debug(),|noDebug()));
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*]):ExecutionPlan[1]
 {
+  println('\nhere 10\n');
    $f->executionPlan($m, $runtime, $context, $extensions, noDebug());
 }
 
@@ -79,18 +85,21 @@ Class meta::pure::executionPlan::PlanSetPlaceHolder
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
+  println('\nhere 1\n');
    let routed = $f->routeFunction($context, $extensions, $debugContext);
    meta::pure::executionPlan::executionPlan($routed, $f, ^Mapping(package=meta::pure::executionPlan, name='dummy'), ^Runtime(), $context, $extensions, $debugContext);
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
+  println('\nhere 2\n');
    let routed = $f->routeFunction($m, $runtime, $context, $extensions, $debugContext);
    meta::pure::executionPlan::executionPlan($routed, $f, $m, $runtime, $context, $extensions, $debugContext);
 }
 
 function meta::pure::executionPlan::executionPlan(routed:RoutingResult[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
+  println('\nhere 3\n');
    let routedFunction = $routed.functions->evaluateAndDeactivate()->toOne();
    let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
 
@@ -102,8 +111,10 @@ function meta::pure::executionPlan::executionPlan(routed:RoutingResult[1], f:Fun
 
 function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecification[*], routed:RoutingResult[1], routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
+  println('\nhere 4\n');
    let functionParameters = $f->stubFuncParameters();
-   
+   print('$clusters->size()');
+   print($clusters->size());
    let node = if ($clusters->size() == 1,
        | $clusters->at(0)->plan($runtime, $inScopeVars, $routed.advancedRouting, $context, $extensions, $debugContext),
        | let allNodes = $clusters->fold({c,a|let x = $a.vars;
@@ -204,12 +215,19 @@ function meta::pure::executionPlan::stubFuncParameters(f:FunctionDefinition<Any>
 
 function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], runtime:Runtime[0..1], inScopeVars:Map<String, List<Any>>[1], advancedRouting:Boolean[0..1], context:ExecutionContext[1], extensions:meta::pure::router::extension::RouterExtension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
+    println('invoking function meta::pure::executionPlan::plan');
+    println('cluster');
+    println($cluster);
     let fe = $cluster.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,
                                   t:TDSRoutedValueSpecification[1] | $t.value,
                                   a:Any[1]|$a])->cast(@FunctionExpression);
+       println('$fe.func');
+            println($fe.func);                            
     if ($fe.func == letFunction_String_1__T_m__T_m_,
           | let extractedFe = $cluster.val->match([e:ExtendedRoutedValueSpecification[1]|$e.value->cast(@SimpleFunctionExpression),s:SimpleFunctionExpression[1]|$s])->cast(@SimpleFunctionExpression);
             let variables = $extractedFe.parametersValues;
+            println('$variables->at(1)');
+            println($variables->at(1));
             let subPlan = $variables->at(1)->match(
                               [
                                  c:ClusteredValueSpecification[1]|
@@ -236,7 +254,7 @@ function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1],
                executionNodes = $subPlan
             );
           ,|
-
+            println('else do this');
             //This is required tp populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
             //the only place where sql is generated for this case.
             let rt = $cluster.runtime->match([

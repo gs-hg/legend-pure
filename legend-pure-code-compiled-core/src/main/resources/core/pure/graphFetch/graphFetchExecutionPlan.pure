@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::json::*;
 import meta::pure::dataQuality::*;
 import meta::pure::graphFetch::*;
 import meta::pure::store::*;
@@ -25,6 +26,29 @@ import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::runtime::*;
+
+// HG: GraphWriteNodes
+
+Enum meta::pure::graphFetch::executionPlan::GraphWriteAction {
+PERSIST,
+UPDATE,
+DELETE
+}
+
+Class  meta::pure::graphFetch::executionPlan::GraphWriteExecutionNode  extends ExecutionNode{
+node: GraphWriteNode[1];
+}
+
+Class  meta::pure::graphFetch::executionPlan::GraphWriteNode {
+class: Class<Any>[1];
+action: GraphWriteAction[1];
+payload: JSONObject[1];
+selectionSet: String[*]; 
+// HG: -> selectionSet => fields to return as part of persistence response like need to use something more complex here**
+//perhaps something like selectionSet:meta::external::query::graphQL::metamodel::executable::Selection[*];
+}
+
+
 
 Class <<doc.deprecated>> meta::pure::graphFetch::executionPlan::GraphFetchExecutionNode extends ExecutionNode
 {

@@ -20,6 +20,8 @@ import meta::external::query::graphQL::serialization::*;
 
 function meta::external::query::graphQL::serialization::graphQLtoString(document: Document[1]):String[1]
 {
+  // println('document:');
+  // println($document);
   $document.definitions->map(x|$x->graphQLtoString())->joinStrings('\n\n');
 }
 
@@ -193,7 +195,7 @@ function meta::external::query::graphQL::serialization::graphQLtoString(value: V
       v : Variable[1] | '$'+$v.name,
       e : EnumValue[1] | $e.value,
       n : NullValue[1] | 'null',
-      o : ObjectValue[1] | meta::json::toPrettyJSONString($o.value)
+      o : ObjectValue[1] | $o.value->meta::json::toJSON()
     ]
   )
 }

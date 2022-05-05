@@ -600,6 +600,13 @@ function
     $class.properties->filter(p | $p.name == $name)->first()
 }
 
+function
+   {doc.doc = 'Get the qualified property with the given name from the given class. Note that this searches only qualified properties defined directly on the class, not those inherited from super-classes or those which come from associations.'}
+   meta::pure::functions::meta::classQualifiedPropertyByName(class:Class<Any>[1], name:String[1]):QualifiedProperty<Any>[0..1]
+{
+    $class.qualifiedProperties->filter(p | $p.name == $name)->first()
+}
+
 function meta::pure::functions::meta::getHiddenPayload(o:Any[1]):Any[1]
 {
    $o.elementOverride->toOne()->cast(@GetterOverride).hiddenPayload->toOne();

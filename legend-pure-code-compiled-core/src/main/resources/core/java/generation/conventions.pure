@@ -1119,6 +1119,7 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
 
       // Meta
       getAll_Class_1__T_MANY_,
+      // persist_T_1__T_1_,
 
       // Infrastructure
       meta::pure::functions::cipher::decrypt_String_1__String_1__String_1_,

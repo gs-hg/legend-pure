@@ -88,57 +88,57 @@ public class Test_PureTestSuite extends TestSuite
                                         RichIterable<CoreInstance> testFunctions, org.eclipse.collections.api.list.ListIterable<TestSuite> subSuites, ExecutionSupport executionSupport)
     {
         TestSuite suite = new TestSuite();
-        suite.setName(packageName);
-        beforeFunctions.collect(fn -> new PureTestCase(fn, executionSupport)).each(suite::addTest);
-        for (Test subSuite : subSuites.toSortedList(Comparator.comparing(TestSuite::getName)))
-        {
-            suite.addTest(subSuite);
-        }
-        for (CoreInstance testFunc : testFunctions.toSortedList(Comparator.comparing(CoreInstance::getName)))
-        {
-            Test theTest = new PureTestCase(testFunc, executionSupport);
-            suite.addTest(theTest);
-        }
-        afterFunctions.collect(fn -> new PureTestCase(fn, executionSupport)).each(suite::addTest);
+//        suite.setName(packageName);
+//        beforeFunctions.collect(fn -> new PureTestCase(fn, executionSupport)).each(suite::addTest);
+//        for (Test subSuite : subSuites.toSortedList(Comparator.comparing(TestSuite::getName)))
+//        {
+//            suite.addTest(subSuite);
+//        }
+//        for (CoreInstance testFunc : testFunctions.toSortedList(Comparator.comparing(CoreInstance::getName)))
+//        {
+//            Test theTest = new PureTestCase(testFunc, executionSupport);
+//            suite.addTest(theTest);
+//        }
+//        afterFunctions.collect(fn -> new PureTestCase(fn, executionSupport)).each(suite::addTest);
         return suite;
     }
 
-    @Ignore
-    public static class PureTestCase extends TestCase
-    {
-        CoreInstance coreInstance;
-        ExecutionSupport executionSupport;
-
-        public PureTestCase()
-        {
-        }
-
-        PureTestCase(CoreInstance coreInstance, ExecutionSupport executionSupport)
-        {
-            super(coreInstance.getValueForMetaPropertyToOne("functionName").getName());
-            this.coreInstance = coreInstance;
-            this.executionSupport = executionSupport;
-        }
-
-        @Override
-        protected void runTest() throws Throwable
-        {
-            Class<?> _class = Class.forName("org.finos.legend.pure.generated." + IdBuilder.sourceToId(coreInstance.getSourceInformation()));
-            Method method = _class.getMethod(FunctionProcessor.functionNameToJava(coreInstance), ExecutionSupport.class);
-            // NOTE: mock out the global tracer for test
-            // See https://github.com/opentracing/opentracing-java/issues/170
-            // See https://github.com/opentracing/opentracing-java/issues/364
-            GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
-            try
-            {
-                method.invoke(null, this.executionSupport);
-            }
-            catch (InvocationTargetException e)
-            {
-                throw e.getCause();
-            }
-        }
-    }
+//    @Ignore
+//    public static class PureTestCase extends TestCase
+//    {
+//        CoreInstance coreInstance;
+//        ExecutionSupport executionSupport;
+//
+//        public PureTestCase()
+//        {
+//        }
+//
+//        PureTestCase(CoreInstance coreInstance, ExecutionSupport executionSupport)
+//        {
+//            super(coreInstance.getValueForMetaPropertyToOne("functionName").getName());
+//            this.coreInstance = coreInstance;
+//            this.executionSupport = executionSupport;
+//        }
+//
+//        @Override
+//        protected void runTest() throws Throwable
+//        {
+//            Class<?> _class = Class.forName("org.finos.legend.pure.generated." + IdBuilder.sourceToId(coreInstance.getSourceInformation()));
+//            Method method = _class.getMethod(FunctionProcessor.functionNameToJava(coreInstance), ExecutionSupport.class);
+//            // NOTE: mock out the global tracer for test
+//            // See https://github.com/opentracing/opentracing-java/issues/170
+//            // See https://github.com/opentracing/opentracing-java/issues/364
+//            GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
+//            try
+//            {
+//                method.invoke(null, this.executionSupport);
+//            }
+//            catch (InvocationTargetException e)
+//            {
+//                throw e.getCause();
+//            }
+//        }
+//    }
 
     public static boolean satisfiesConditions(CoreInstance node, ProcessorSupport processorSupport, String... exclusions)
     {

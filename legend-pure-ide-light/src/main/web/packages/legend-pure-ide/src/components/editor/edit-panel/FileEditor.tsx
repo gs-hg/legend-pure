@@ -89,6 +89,7 @@ export const FileEditor = observer(
           }
           editorState.file.setContent(currentVal);
         });
+
         editor.onKeyDown((event) => {
           if (event.keyCode === KeyCode.F9) {
             event.preventDefault();

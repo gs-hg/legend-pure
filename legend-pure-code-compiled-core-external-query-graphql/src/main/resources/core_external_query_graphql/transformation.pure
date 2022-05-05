@@ -93,7 +93,9 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
       o : OperationDefinition[1]| pair('__Query', list($o.selectionSet->transformSelectionToPure($root)));
     ])    
   )->newMap();
-
+//  println('$fragments->get(__Query)->toOne().values');
+  // println($fragments->get('__Query')->toOne().values);
+//  println($query->meta::external::query::graphQL::serialization::graphQLtoString());
   ^RootGraphFetchTree<Any>
   (
     class = $root,
@@ -163,7 +165,122 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
 
 ###Pure
 import meta::external::query::graphQL::transformation::queryToPure::*;
+import meta::external::query::graphQL::metamodel::*; 
+import meta::external::query::graphQL::metamodel::value::*; 
+import meta::external::query::graphQL::metamodel::executable::*; 
+import meta::json::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::executionPlan::*;
 
+function meta::legend::crud::hugo::tests::persist2<T>(input: T[1]): T[1]
+{
+  $input;
+}
+
+
+
+function meta::external::query::graphQL::transformation::queryToPure::persistFromJSONObjectString<T>(class: Class<T>[1], inputJsonObjStr: String[1]): T[1]
+{
+   let inputJsonObj = meta::json::parseJSON($inputJsonObjStr)->cast(@meta::json::JSONObject);
+   meta::external::query::graphQL::transformation::queryToPure::persistFromJSONObject($class, $inputJsonObj);  
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::persistFromJSONObject<T>(class: Class<T>[1], inputJsonObj: JSONObject[1]): T[1]
+{
+  // println('t0');
+ // HG: do we need to omit in case we get JSON with ID or any other non-expect key? or just throw?
+  let inputJsonObjPersisted = ^meta::json::JSONObject(keyValuePairs=[concatenate($inputJsonObj.keyValuePairs->filter
+    (kv | !$kv.key.value->equal('id')),meta::json::newJSONKeyValue('id', ^meta::json::JSONNumber(value=123))) ]);
+    let inputStr = toJSON($inputJsonObjPersisted);
+    // println('$inputStr');
+    // println($inputStr);
+    let result = meta::json::fromJSON($inputJsonObjPersisted, $class)->cast(@T)->toOne();
+  //       println('re3');
+  //       println($re3);
+  //  let res2 = meta::json::fromJSON($inputJsonObjPersisted, $class->cast(@Class<T>))->genericType()->genericTypeClass()->cast(@Class<T>);
+  //    println('t1');
+    // println($result->meta::json::toJSON());
+   $result;
+}
+
+
+// Given a root query with a named qualifiedProperty ie. 
+// Class RootQuery {
+// persistFirm(input: meta::legend::crud::hugo::tests::domain::Firm[1]) { $input->meta::legend::crud::hugo::tests::persist()}: meta::legend::crud::hugo::tests::domain::Firm[1];  
+// }
+
+function meta::external::query::graphQL::transformation::queryToPure::extractPersistFuncFromRootQueryClass(rootQuery: Class<Any>[1], mutationName: String[1]): Function<Any>[1] {
+  let input = ^meta::external::query::graphQL::serialization::tests::Firm(name='my firm', address='street 123', id=1);
+let extractedQP = $rootQuery->meta::pure::functions::meta::classQualifiedPropertyByName($mutationName);
+// println( $extractedQP->toOne().expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate()->toOne().func->evaluate(^List<Any>(values=$input)));
+
+// println( $extractedQP->toOne().expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate()->toOne().func);
+
+
+//   //  $extractedQP->toOne().expressionSequence.func->cast(Function)->meta::pure::functions::lang::evaluate(^List<Any>(values=$input));
+// // native function meta::pure::functions::lang::evaluate(func:Function<Any>[1], params:List<Any>[*]):Any[*];
+// let persistInputClass =  $extractedQP->toOne()->functionType().parameters->evaluateAndDeactivate()->tail()->at(0).genericType.rawType->toOne()->cast(@Class<Any>);
+
+// println('extractPersistFuncFromRootQueryClass:\n');
+// // println($persistInputClass);
+// $persistInputClass;
+$extractedQP->toOne().expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate()->toOne().func;
+}
+// native function meta::pure::functions::lang::evaluate(func:Function<Any>[1], params:List<Any>[*]):Any[*];
+// native function meta::pure::functions::meta::deactivate(var:Any[*]):ValueSpecification[1];
+// native function meta::pure::functions::meta::reactivate(vs:ValueSpecification[1], vars:Map<String, List<Any>>[1]):Any[*];
+// extract the inut class type ( so we can use it for persist function) ie. return Class meta::legend::crud::hugo::tests::domain::Firm
+function meta::external::query::graphQL::transformation::queryToPure::extractInputClassFromRootQueryClass(rootQuery: Class<Any>[1], mutationName: String[1]):Class<Any>[1] {
+
+let extractedQP = $rootQuery->meta::pure::functions::meta::classQualifiedPropertyByName($mutationName);
+let persistInputClass =  $extractedQP->toOne()->functionType().parameters->evaluateAndDeactivate()->tail()->at(0).genericType.rawType->toOne()->cast(@Class<Any>);
+
+// println('extractInputClassFromRootQueryClass:\n');
+// println($persistInputClass);
+$persistInputClass;
+}
+
+
+function meta::external::query::graphQL::transformation::queryToPure::extractMutationNameAndInputFromGQLQuery(queryGQL:meta::external::query::graphQL::metamodel::Document[1]): Pair<String, meta::json::JSONObject>[1] {
+
+
+ // mutation with input variables payload 
+  //  let gqlDocument = ^Document(
+  //   definitions = 
+  //     [
+  //       ^OperationDefinition(
+  //         type = OperationType.mutation,
+  //         name = 'persistFirm',
+  //         variables = [],
+  //         directives = [],
+  //         selectionSet = ^Field(
+  //           name = 'persistFirm',
+  //           arguments = [
+  //              ^Argument(name='input', value=^ObjectValue(value=$inputJsonObjPersisted))
+  //           ],
+  //           directives = [],
+  //           selectionSet = [
+  //             ^Field(
+  //              name = 'id',
+  //             arguments = [],
+  //             directives = []
+  //           ),
+  //             ^Field(
+  //              name = 'name',
+  //             arguments = [],
+  //             directives = []
+  //           )
+  //           ]
+  //         )
+  //       )
+  //     ]
+  // );
+
+  let mutationName = $queryGQL.definitions->first()->cast(@OperationDefinition).selectionSet->cast(@Field).name->toOne(); 
+ let mutationInputJsonObj =  $queryGQL.definitions->first()->cast(@OperationDefinition).selectionSet->cast(@Field).arguments->first().value->cast(@ObjectValue).value->cast(@JSONObject)->toOne();
+// println($queryGQL.definitions->first()->cast(@OperationDefinition).selectionSet->cast(@Field).arguments->first().value->cast(@ObjectValue).value->cast(@JSONObject));
+^Pair<String, meta::json::JSONObject>(first=$mutationName, second=$mutationInputJsonObj);
+}
 
 function meta::external::query::graphQL::transformation::queryToPure::getMutationPlansFromGraphQL(
                                                                           cl:Class<Any>[1],
@@ -175,16 +292,138 @@ function meta::external::query::graphQL::transformation::queryToPure::getMutatio
 {
   // fail('Error: getMutationPlansFromGraphQL not yet implemented.');
   //meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure(query:Document[1], root: Class<Any>[1]) : RootGraphFetchTree<Any>[1]
-
+ println('getMutationPlansFromGraphQL');
   
   let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  // let persisted = meta::legend::crud::hugo::tests::persist2($cl, $query);
   let graphFetchString = $graphFetch->meta::pure::graphFetch::routing::asString(true);
-  //  assertEquals('', $graphFetchString);
-    // assertEquals('', meta::json::toPrettyJSONString(meta::json::toJSONElement($graphFetchString)));
-   let domainTypeClass = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree();
-  // let domainTypeClassString = $domainTypeClass->meta::pure::graphFetch::routing::asString(true);
+  // println('graphQLExecutableToPure ( graphFetch) as string: ');
+  // println($graphFetchString);
+
+    // println('graphQLExecutableToPure ( graphFetch) as JSON: ');
+      // println($graphFetch);
+  // println($graphFetch.subTrees->at(0)->cast(@meta::pure::graphFetch::PropertyGraphFetchTree)->meta::pure::graphFetch::routing::asString(true));
+
+
+
+
+let mutationNameAndJSONInput = meta::external::query::graphQL::transformation::queryToPure::extractMutationNameAndInputFromGQLQuery($query);
+let mutationName =  $mutationNameAndJSONInput.first;
+let mutationJSONInput =  $mutationNameAndJSONInput.second;
+
+// From RootQuery:
+// find the QP with name and get the only input type ( a class ie. Firm)
+let mutationInputClass = meta::external::query::graphQL::transformation::queryToPure::extractInputClassFromRootQueryClass($cl, $mutationName);
+
+// From QGL Query:
+// println('Mutation name:');
+// println($mutationName);
+// println('Mutation JSONObject:');
+// println($mutationJSONInput->toJSON());
+
+// println('Input class from mutation with name:');
+// println($mutationInputClass);
+
+// get persist Func from RootQuery ( So we can evaluate with expected Input ( Firm ))
+let persistFunc = meta::external::query::graphQL::transformation::queryToPure::extractPersistFuncFromRootQueryClass($cl, $mutationName);
+
+
+// println($mutationJSONInput->toJSON());
+
+// Given GQL JSONObject and expected Input class from RootQuery, serialize JSONObj to Pure Obj ( Firm[1]) 
+let firmObjFromJson = meta::external::query::graphQL::transformation::queryToPure::persistFromJSONObject($mutationInputClass, $mutationJSONInput);
+
+
+// evaluate persistFunc with Pure Object Input (Firm[1]) TODO: Plan is for persist to become a native func
+let persistedFirm = $persistFunc->meta::pure::functions::lang::evaluate(^List<Any>(values=$firmObjFromJson));
+
+println($persistedFirm->meta::json::toJSON());
+// println($persistedFirmFromJson->toJSON());
+// println($persistedFirmFromJson->toJSONElement()->cast(@JSONObject));
+
+
+let persistedFirmJsonObj = $persistedFirm->toJSONElement()->cast(@JSONObject);
+
+// convert GQL query to type expected by RootQuery mutation name ( QualifiedProperty name )
+
+
+// meta::legend::crud::hugo::tests::persistFromJSONObject
+
+//  meta::external::query::graphQL::transformation::queryToPure::extractMutationNameAndInputFromGQLQuery()
+
+// println($extractedPersistQP->toOne()->meta::pure::metamodel::serialization::json::qualifiedPropertyToJSON()->meta::json::toJSON());
+// meta::pure::metamodel::serialization::json::parameterToJSON($extractedPersistQP.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->cast(@VariableExpression)->at(1).deactivate());
+
+// println($extractedPersistQP.expressionSequence);
+//toOne()->deactivate()
+//  ->cast(@QualifiedProperty<Any>).expressionSequence->toOne()->asString();
+//   println($cl->classPropertyByName('persistFirme'));
+//  println('properties of cl:');
+//  println($cl->meta::pure::functions::meta::classQualifiedPropertyByName('persistFirm'));
+
+
+//  println($cl->meta::pure::functions::meta::classQualifiedPropertyByName('persistFirm'));
+// function meta::pure::metamodel::serialization::json::qualifiedPropertyToJSON(property:QualifiedProperty<Any>[1]):JSONElement[1]
+// {
+// function
+//    {doc.doc = 'Get the property with the given name from the given class. Note that this searches only properties defined directly on the class, not those inherited from super-classes or those which come from associations.'}
+//    meta::pure::functions::meta::classPropertyByName(class:Class<Any>[1], name:String[1]):Property<Nil,Any|*>[0..1]
+// {
+//     $class.properties->filter(p | $p.name == $name)->first()
+// }
+
+  // let property = $obj->genericType()->properties()->get($propertyName);
+// meta::external::query::graphQL::transformation::queryToPure::extractClassAndPayloadFromQuery($cl, $query);
+//  println($graphFetch.subTrees->at(0)->cast(@meta::pure::graphFetch::PropertyGraphFetchTree).parameters->evaluateAndDeactivate()->cast(@InstanceValue).values->
+//  meta::json::toJSON());
+
+
+
+
+  // .parameters->evaluateAndDeactivate()
+  // ->cast(@InstanceValue));
+
+  // print function they use 
+
+      // rr: RootGraphFetchTree<Any>[1] |
+      //    $space + '#{'+$rr.class->elementToPath() +
+      //    if($rr.subTrees->isEmpty(), | '}#', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}}#')),
+
+
+//         rp: PropertyGraphFetchTree[1] |
+//          $space +  $rp.property.name->toOne() + if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->asString())->joinStrings(', ')+')', |'') +
+//          if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}'));
+//  ]); 
+  // let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphWriteTree();
+  // println('extractDomainTypeClassFromGraphWriteTree result: ');
+  // println($res->at(0).first);
+  // println($res->at(0).second->meta::pure::router::printer::asString());
+  // println('done');
   
-  [];
+  // let domainTypeClassString = $domainTypeClass->meta::pure::graphFetch::routing::asString(true);
+
+
+  let graphWriteNode = ^meta::pure::graphFetch::executionPlan::GraphWriteNode(
+    class=$cl, 
+    action=meta::pure::graphFetch::executionPlan::GraphWriteAction.PERSIST,
+    payload=$persistedFirmJsonObj,
+    selectionSet=''
+  );
+
+
+  let graphWriteExecutionNode = ^GraphWriteExecutionNode(node=[$graphWriteNode], resultType=^ResultType(type = Boolean));
+
+  let executionPlan =  ^ExecutionPlan
+   (
+      func =  meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
+      mapping = $mapping,
+      runtime = $runtime,
+      rootExecutionNode = $graphWriteExecutionNode,
+      authDependent = false,
+      kerberos =  'test'
+   );
+   
+  [^Pair<String, meta::pure::executionPlan::ExecutionPlan>(first=$mutationName, second=$executionPlan)];
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::getSubscriptionPlansFromGraphQL(
@@ -209,9 +448,14 @@ function meta::external::query::graphQL::transformation::queryToPure::getQueryPl
 {
   let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
   let graphFetchString = $graphFetch->meta::pure::graphFetch::routing::asString(true);
-    // assertEquals('', $graphFetchString);
+  // assertEquals('', $graphFetchString);
+  println('graphQLExecutableToPure ( graphFetch) as string: ');
+  println($graphFetchString);
   let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree();
-  assertEquals('', $res);
+  println('extractDomainTypeClassFromGraphFetchTree result: ');
+  println($res->at(0).first);
+  println($res->at(0).second->meta::pure::router::printer::asString());
+  println('done');
   $res->map(r|
               pair(
                 $r.first,

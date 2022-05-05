@@ -54,12 +54,45 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
          e:FunctionParametersValidationNode[1] | 'FunctionParametersValidationNode\n'+ $space+ '(' + '\n'+ $space +'  functionParameters = '+  $e.functionParameters->map(p|$p.name+':'+$p.type->elementToPath()+ '[' + printMultiplicity($p.multiplicity->toOne()) + ']')->makeString('[',', ',']')+'\n'+$space+')\n',
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1] | $g->meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString($space, $extensions),
          g:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1] | $g->meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString($space, $extensions),
-         i:	meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions)
-
+         i:	meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions),
+        gw: meta::pure::graphFetch::executionPlan::GraphWriteExecutionNode[1] | $gw->meta::pure::graphFetch::executionPlan::graphWriteExecutionNodeToString($space, $extensions)
       ])->toOneMany()
    );
    $space + $root;
 }
+
+function meta::pure::graphFetch::executionPlan::graphWriteExecutionNodeToString(n: meta::pure::graphFetch::executionPlan::GraphWriteExecutionNode[1], space: String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
+{
+  // println($g.node);
+   'GraphWriteExecutionNode\n' + 
+      $space + '(' + header($n, $space, $extensions) + '\n'+
+      $space + '  node = \n' + $space + '     ' + $n.node->meta::pure::graphFetch::executionPlan::graphWriteNodeToString($space + '     ') +
+      // $space + '  children = ' + $g.children->map(x | globalGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') + 
+      // if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
+      // if($g.xStorePropertyMapping->isEmpty(), | '', | $space + '  xStorePropertyMapping = ' + $g.xStorePropertyMapping.property.name->toOne() + '[' + $g.xStorePropertyMapping.sourceSetImplementationId->toOne() + ' -> ' + $g.xStorePropertyMapping.targetSetImplementationId->toOne() + ']' + '\n') +
+      // $g.implementation->printImplementation('implementation', $space+'  ', $extensions)+
+      $space + ')\n';
+}
+
+function meta::pure::graphFetch::executionPlan::graphWriteNodeToString(g: meta::pure::graphFetch::executionPlan::GraphWriteNode[1], space: String[1]):String[1]
+{
+    // println($g.node);
+   'GraphWriteNode\n' + 
+      $space + '  class = ' + $g.class->toString() + '\n'  +
+     $space +  'action = '  + $g.action->toString() +'\n' +
+     $space +   'payload = ' + $g.payload->meta::json::toPrettyJSONString() + '\n'  +
+
+      // $space + '  children = ' + $g.children->map(x | globalGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') + 
+      // if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
+      // if($g.xStorePropertyMapping->isEmpty(), | '', | $space + '  xStorePropertyMapping = ' + $g.xStorePropertyMapping.property.name->toOne() + '[' + $g.xStorePropertyMapping.sourceSetImplementationId->toOne() + ' -> ' + $g.xStorePropertyMapping.targetSetImplementationId->toOne() + ']' + '\n') +
+      // $g.implementation->printImplementation('implementation', $space+'  ', $extensions)+
+      $space + ')\n';
+}
+
+// class: Class<Any>[1];
+// action: GraphWriteAction[1];
+// payload: JSONObject[1];
+// selectionSet: String[*]; 
 
 function <<access.public>> meta::pure::executionPlan::toString::printImplementation(e:PlatformImplementation[0..1], key:String[1], space:String[1], extensions:meta::pure::router::extension::RouterExtension[*]):String[1]
 {
